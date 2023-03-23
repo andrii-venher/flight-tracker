@@ -3,6 +3,4 @@ services:
   bot:
     env_file: .env
     container_name: flight-tracker-bot
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: venher/flight-tracker-bot
