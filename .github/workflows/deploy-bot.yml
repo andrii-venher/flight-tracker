@@ -32,3 +32,11 @@ jobs:
           platforms: linux/amd64, linux/arm64/v8
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/flight-tracker-bot:latest
+
+      - name: Deploy container
+        env:
+          SCW_TOKEN: ${{ secrets.SCW_TOKEN }}
+        run: |
+          curl -X POST \
+          -H "X-Auth-Token: $SCW_TOKEN" \ 
+          "https://api.scaleway.com/containers/v1beta1/regions/$SCW_REGION/containers/$SCW_CONTAINER_ID/deploy"
