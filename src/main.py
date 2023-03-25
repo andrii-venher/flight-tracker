@@ -1,22 +1,16 @@
 import os
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
 import asyncio
-
 import uvicorn
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Route
-
 from FlightRadar24.api import FlightRadar24API
 
-fr_api = FlightRadar24API()
+from dotenv import load_dotenv
+load_dotenv()
 
-airports = fr_api.get_airports()
+fr_api = FlightRadar24API()
 
 # Countires info
 countries = ['Italy', 'Spain', 'Denmark', 'Poland', 'Germany',
