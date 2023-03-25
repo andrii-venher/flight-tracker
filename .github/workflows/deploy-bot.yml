@@ -39,4 +39,4 @@ jobs:
         run: >
           curl -X POST 
           -H "X-Auth-Token: ${{ secrets.SCW_TOKEN }}" 
-          "https://api.scaleway.com/containers/v1beta1/regions/${{ env.SCW_REGION }}/containers/${{ env.SCW_CONTAINER_ID }}/deploy"
+          "https://api.scaleway.com/containers/v1beta1/regions/${{ vars.SCW_REGION }}/containers/${{ vars.SCW_CONTAINER_ID }}/deploy"
