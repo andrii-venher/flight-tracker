@@ -229,10 +229,7 @@ def build_bot():
 
 
 async def start_webhook(application):
-    url = os.getenv("BOT_WEBHOOK_URL")
     port = int(os.getenv("BOT_WEBHOOK_PORT"))
-
-    await application.bot.set_webhook(url=f"{url}/telegram")
 
     async def telegram(request: Request) -> Response:
         await application.update_queue.put(
