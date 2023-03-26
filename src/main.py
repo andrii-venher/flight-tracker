@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from dotenv import load_dotenv
-from src.bot import build_bot, start_webhook, start_pooling
+from bot import build_bot, start_webhook, start_pooling
 
 load_dotenv()
 

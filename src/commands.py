@@ -4,7 +4,6 @@ from telegram.ext import ContextTypes
 
 fr_api = FlightRadar24API()
 
-# Countires info
 countries = ['Italy', 'Spain', 'Denmark', 'Poland', 'Germany',
              'France', 'Portugal', 'Sweden', 'Finland',
              'China', 'Austria', 'Japan', 'Norway',

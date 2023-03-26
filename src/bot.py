@@ -8,7 +8,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackQueryHandler, \
     ConversationHandler
 
-from src.commands import start, help_command, airport, countries_list, airports_list, airport_info, echo
+from commands import start, help_command, airport, countries_list, airports_list, airport_info, echo
 
 AIRPORTS, AIRPORT_INFO = range(2)
 
