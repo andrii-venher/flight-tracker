@@ -8,7 +8,8 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackQueryHandler, \
     ConversationHandler
 
-from commands import start, help_command, airport, countries_list, airports_list, airport_info, echo
+from commands import start, help_command, random_airport, countries_list, airports_list, airport_info, echo, \
+    random_flight, random_airline
 
 AIRPORTS, AIRPORT_INFO = range(2)
 
@@ -17,10 +18,14 @@ def build_bot():
     application = Application.builder().token(os.getenv("BOT_TOKEN")).build()
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start),
-                      CommandHandler("help", help_command),
-                      CommandHandler("airport", airport),
-                      CommandHandler("airports", countries_list)],
+        entry_points=[
+            CommandHandler("start", start),
+            CommandHandler("help", help_command),
+            CommandHandler("random_airport", random_airport),
+            CommandHandler("airports", countries_list),
+            CommandHandler("random_flight", random_flight),
+            CommandHandler("random_airline", random_airline)
+        ],
         states={
             AIRPORTS: [CallbackQueryHandler(airports_list)],
             AIRPORT_INFO: [CallbackQueryHandler(airport_info)]

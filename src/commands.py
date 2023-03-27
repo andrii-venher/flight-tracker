@@ -1,6 +1,7 @@
 from FlightRadar24.api import FlightRadar24API
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, ForceReply
 from telegram.ext import ContextTypes
+import random
 
 fr_api = FlightRadar24API()
 
@@ -79,7 +80,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(update.message.text)
 
 
-async def airport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def random_airport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Echo the user message."""
     await update.message.reply_text(airports[0])
 
@@ -148,16 +149,15 @@ async def airport_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await query.edit_message_text(text=query.message.text, reply_markup=reply_markup)
         return AIRPORT_INFO
     else:
-        airports = fr_api.get_airports()
         reply = f"{query.data}\n"
         for airport in local_airports:
             if airport["name"] == query.data:
-                reply += f'iata: {airport["iata"]}\n'
-                reply += f'icao: {airport["icao"]}\n'
-                reply += f'lat: {airport["lat"]}\n'
-                reply += f'lon: {airport["lon"]}\n'
-                reply += f'country: {airport["country"]}\n'
-                reply += f'alt: {airport["alt"]}\n'
+                reply += f'Country: {airport["country"]}\n'
+                reply += f'IATA: {airport["iata"]}\n'
+                reply += f'ICAO: {airport["icao"]}\n'
+                reply += f'Latitude: {airport["lat"]}\n'
+                reply += f'Longitude: {airport["lon"]}\n'
+                reply += f'Alt: {airport["alt"]}\n'
 
         countries_page = 1
         airports_page = 1
@@ -165,3 +165,27 @@ async def airport_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
         await query.edit_message_text(text=reply)
         return -1
+
+
+async def random_flight(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    flights = fr_api.get_flights()
+    flight = random.choice(flights)
+    text = ''
+    text += f'Flight number: {flight.registration}\n'
+    text += f'From: {flight.origin_airport_iata}\n'
+    text += f'To: {flight.destination_airport_iata}\n'
+    text += f'Latitude: {flight.latitude}\n'
+    text += f'Longitude: {flight.longitude}\n'
+    text += f'Ground speed: {flight.ground_speed}'
+    await update.message.reply_text(text)
+
+
+async def random_airline(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Retrieve the list of airlines
+    airlines = fr_api.get_airlines()
+    airline = random.choice(airlines)
+    text = ''
+    text += f'Name: {airline["Name"]}\n'
+    text += f'Company code: {airline["Code"]}\n'
+    text += f'ICAO: {airline["ICAO"]}'
+    await update.message.reply_text(text)
