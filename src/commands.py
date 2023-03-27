@@ -2,6 +2,7 @@ from FlightRadar24.api import FlightRadar24API
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, ForceReply
 from telegram.ext import ContextTypes
 import random
+from common import text_from_airport
 
 fr_api = FlightRadar24API()
 
@@ -82,7 +83,9 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def random_airport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Echo the user message."""
-    await update.message.reply_text(airports[0])
+    airport = random.choice(airports)
+    text = text_from_airport(airport)
+    await update.message.reply_text(text)
 
 
 async def countries_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -136,6 +139,8 @@ async def airport_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
     await query.answer()
 
+    reply = ''
+
     if query.data == "RIGHT":
         airports_page += 1
         reply_markup = airports_list_formatter()
@@ -149,15 +154,9 @@ async def airport_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await query.edit_message_text(text=query.message.text, reply_markup=reply_markup)
         return AIRPORT_INFO
     else:
-        reply = f"{query.data}\n"
         for airport in local_airports:
             if airport["name"] == query.data:
-                reply += f'Country: {airport["country"]}\n'
-                reply += f'IATA: {airport["iata"]}\n'
-                reply += f'ICAO: {airport["icao"]}\n'
-                reply += f'Latitude: {airport["lat"]}\n'
-                reply += f'Longitude: {airport["lon"]}\n'
-                reply += f'Alt: {airport["alt"]}\n'
+                reply = text_from_airport(airport)
 
         countries_page = 1
         airports_page = 1
