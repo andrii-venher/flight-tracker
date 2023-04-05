@@ -9,9 +9,9 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
     ConversationHandler
 
 from commands import start, help_command, random_airport, countries_list, airports_list, airport_info, echo, \
-    random_flight, random_airline, top_destinations
+    random_flight, random_airline, top_destinations, zones_list, flights_list, flight_info
 
-AIRPORTS, AIRPORT_INFO = range(2)
+AIRPORTS, AIRPORT_INFO, FLIGHTS, FLIGHT_INFO = range(4)
 
 
 def build_bot():
@@ -25,11 +25,14 @@ def build_bot():
             CommandHandler("airports", countries_list),
             CommandHandler("random_flight", random_flight),
             CommandHandler("random_airline", random_airline),
-            CommandHandler("top_destinations", top_destinations)
+            CommandHandler("top_destinations", top_destinations),
+            CommandHandler("track_flights", zones_list)
         ],
         states={
             AIRPORTS: [CallbackQueryHandler(airports_list)],
-            AIRPORT_INFO: [CallbackQueryHandler(airport_info)]
+            AIRPORT_INFO: [CallbackQueryHandler(airport_info)],
+            FLIGHTS: [CallbackQueryHandler(flights_list)],
+            FLIGHT_INFO: [CallbackQueryHandler(flight_info)]
         },
         fallbacks=[CommandHandler("start", start)],
     )
@@ -37,7 +40,7 @@ def build_bot():
     # on different commands - answer in Telegram
     application.add_handler(conv_handler)
 
-    # on non command i.e message - echo the message on Telegram
+    # on non command i.e. message - echo the message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
     return application
 

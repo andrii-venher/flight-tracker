@@ -10,22 +10,21 @@ countries = ['Italy', 'Spain', 'Denmark', 'Poland', 'Germany',
              'France', 'Portugal', 'Sweden', 'Finland',
              'China', 'Austria', 'Japan', 'Norway',
              'Switzerland', 'Netherlands', 'Brazil', 'Argentina']
-countries_per_page = 4
-max_number_of_countries_pages = len(countries) // countries_per_page
+items_per_page = 4
+max_number_of_countries_pages = len(countries) // items_per_page
 
 airports = fr_api.get_airports()
-airports_per_page = 4
 
-AIRPORTS, AIRPORT_INFO = range(2)
+AIRPORTS, AIRPORT_INFO, FLIGHTS, FLIGHT_INFO = range(4)
 
 
 # For navigating between countries list
 def countries_list_formatter(page_number):
     keyboard = []
-    for country in countries[(page_number - 1) * countries_per_page:page_number * countries_per_page]:
+    for country in countries[(page_number - 1) * items_per_page:page_number * items_per_page]:
         keyboard.append([InlineKeyboardButton(country, callback_data=country)])
 
-    reply_markup = add_arrows(keyboard, page_number, max_number_of_countries_pages, page_number)
+    reply_markup = add_arrows(keyboard, page_number, max_number_of_countries_pages)
     return reply_markup
 
 
@@ -34,20 +33,54 @@ def airports_list_formatter(page_number, country):
     keyboard = []
     local_airports = get_local_airports(country)
 
-    for airport in local_airports[(page_number - 1) * airports_per_page:page_number * airports_per_page]:
+    for airport in local_airports[(page_number - 1) * items_per_page:page_number * items_per_page]:
         keyboard.append([InlineKeyboardButton(airport["name"], callback_data=airport["name"])])
 
-    reply_markup = add_arrows(keyboard, page_number, len(local_airports) // airports_per_page, page_number)
+    reply_markup = add_arrows(keyboard, page_number, len(local_airports) // items_per_page)
+    return reply_markup
+
+def zones_list_formatter(page_number):
+    keyboard = []
+    zones = fr_api.get_zones()
+    zones_names = []
+
+    for zone in list(zones)[(page_number - 1) * items_per_page:page_number * items_per_page]:
+        keyboard.append([InlineKeyboardButton(zone.capitalize(), callback_data=zone)])
+
+    reply_markup = add_arrows(keyboard, page_number, len(zones_names) // items_per_page)
     return reply_markup
 
 
-def add_arrows(keyboard, cur_page, max_page, page_number):
+def flights_list_formatter(page_number, zone):
+    keyboard = []
+    local_flights = []
+
+    zones = fr_api.get_zones()
+    bounds = fr_api.get_bounds(zones[zone])
+    flights = fr_api.get_flights(bounds=bounds)
+
+    for flight in flights[(page_number - 1) * items_per_page:page_number * items_per_page]:
+        try:
+            details = fr_api.get_flight_details(flight.id)
+            if details['status']['live']:
+                local_flights.append(flight.id)
+        except:
+            ##bad data
+            pass
+
+    for local_flight in local_flights:
+        keyboard.append([InlineKeyboardButton(local_flight, callback_data=local_flight)])
+
+    reply_markup = add_arrows(keyboard, page_number, len(flights) // items_per_page)
+    return reply_markup
+
+def add_arrows(keyboard, page_number, max_page):
     right_button = InlineKeyboardButton(">", callback_data=page_number+1)
     left_button = InlineKeyboardButton("<", callback_data=page_number-1)
 
-    if 1 < cur_page < max_page:
+    if 1 < page_number < max_page:
         keyboard.append([left_button, right_button])
-    elif cur_page > 1:
+    elif page_number > 1:
         keyboard.append([left_button])
     else:
         keyboard.append([right_button])
@@ -199,13 +232,77 @@ async def top_destinations(update: Update, context: ContextTypes.DEFAULT_TYPE):
     destinations = dict(sorted(destinations.items(), key=lambda item: item[1], reverse=True))
     top_airports = list(destinations.items())[:10]
 
-    text = ''
+    text = 'Top 10 destinations at the moment:\n'
+    i = 1
     for airport_tuple in top_airports:
+        text += f'{i}. '
         airport = fr_api.get_airport(airport_tuple[0])
         text += airport["name"]
-        text += f'({airport["position"]["country"]["name"]})'
+        text += f' ({airport["position"]["country"]["name"]})'
         text += ": "
         text += f'{airport_tuple[1]}'
         text += "\n"
+        i += 1
 
     await update.message.reply_text(text)
+
+
+async def zones_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Echo the user message."""
+    reply_markup = zones_list_formatter(1)
+    await update.message.reply_text("Please choose a zone: ", reply_markup=reply_markup)
+    return FLIGHTS
+
+
+async def flights_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Parses the CallbackQuery and updates the message text."""
+    query = update.callback_query
+
+    # CallbackQueries need to be answered, even if no notification to the user is needed
+    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
+    await query.answer()
+
+    # Show more countries or show airports
+    if query.data.isdigit():
+        reply_markup = zones_list_formatter(int(query.data))
+        await query.edit_message_text("Please choose a zone: ", reply_markup=reply_markup)
+        return FLIGHTS
+    else:
+        context.user_data["zone"] = query.data
+        reply = f"Flights in {query.data}:\n"
+
+        reply_markup = flights_list_formatter(1, query.data)
+        await query.edit_message_text(text=reply, reply_markup=reply_markup)
+        return FLIGHT_INFO
+
+
+async def flight_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Parses the CallbackQuery and updates the message text."""
+    query = update.callback_query
+
+    # CallbackQueries need to be answered, even if no notification to the user is needed
+    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
+    await query.answer()
+    reply = 'Your flight:\n'
+    zone = context.user_data["zone"]
+
+    if query.data.isdigit():
+        reply_markup = flights_list_formatter(int(query.data), zone)
+        await query.edit_message_text(text=query.message.text, reply_markup=reply_markup)
+        return FLIGHT_INFO
+    else:
+        try:
+            details = fr_api.get_flight_details(query.data)
+            reply += f'id: {details["identification"]["id"]}\n'
+            reply += f'arrival: {details["status"]["text"]} {details["airport"]["destination"]["timezone"]["abbr"]}\n'
+            reply += f'aircraft: {details["aircraft"]["model"]["text"]}\n'
+            reply += f'airline: {details["airline"]["name"]}\n'
+            reply += f'origin: {details["airport"]["origin"]["name"]}' \
+                     f' ({details["airport"]["origin"]["position"]["country"]["name"]})\n'
+            reply += f'destination: {details["airport"]["destination"]["name"]} ' \
+                     f'({details["airport"]["destination"]["position"]["country"]["name"]})\n'
+        except:
+            reply += "Data not found"
+
+        await query.edit_message_text(text=reply)
+        return -1
