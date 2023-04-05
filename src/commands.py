@@ -55,6 +55,7 @@ def add_arrows(keyboard, cur_page, max_page, page_number):
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
+
 def get_local_airports(country) -> list:
     local_airports = []
 
@@ -173,4 +174,38 @@ async def random_airline(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text += f'Name: {airline["Name"]}\n'
     text += f'Company code: {airline["Code"]}\n'
     text += f'ICAO: {airline["ICAO"]}'
+    await update.message.reply_text(text)
+
+
+async def top_destinations(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    flights = fr_api.get_flights()
+    destinations = {}
+
+    for flight in flights:
+        try:
+            destination_iata = flight.destination_airport_iata
+
+            if destination_iata == 'N/A':
+                continue
+
+            if destination_iata in destinations:
+                destinations[destination_iata] += 1
+            else:
+                destinations[destination_iata] = 0
+        except:
+            ##bad data
+            pass
+
+    destinations = dict(sorted(destinations.items(), key=lambda item: item[1], reverse=True))
+    top_airports = list(destinations.items())[:10]
+
+    text = ''
+    for airport_tuple in top_airports:
+        airport = fr_api.get_airport(airport_tuple[0])
+        text += airport["name"]
+        text += f'({airport["position"]["country"]["name"]})'
+        text += ": "
+        text += f'{airport_tuple[1]}'
+        text += "\n"
+
     await update.message.reply_text(text)
