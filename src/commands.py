@@ -247,6 +247,43 @@ async def top_destinations(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text)
 
 
+async def top_origins(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    flights = fr_api.get_flights()
+    origins = {}
+
+    for flight in flights:
+        try:
+            origin_iata = flight.origin_airport_iata
+
+            if origin_iata == 'N/A':
+                continue
+
+            if origin_iata in origins:
+                origins[origin_iata] += 1
+            else:
+                origins[origin_iata] = 0
+        except:
+            ##bad data
+            pass
+
+    destinations = dict(sorted(origins.items(), key=lambda item: item[1], reverse=True))
+    top_airports = list(destinations.items())[:10]
+
+    text = 'Top 10 origins at the moment:\n'
+    i = 1
+    for airport_tuple in top_airports:
+        text += f'{i}. '
+        airport = fr_api.get_airport(airport_tuple[0])
+        text += airport["name"]
+        text += f' ({airport["position"]["country"]["name"]})'
+        text += ": "
+        text += f'{airport_tuple[1]}'
+        text += "\n"
+        i += 1
+
+    await update.message.reply_text(text)
+
+
 async def zones_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Echo the user message."""
     reply_markup = zones_list_formatter(1)
