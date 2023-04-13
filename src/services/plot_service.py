@@ -14,7 +14,10 @@ def make_airports_ranking_chart(airports_ranking, flights_axis_label):
 
     ax.set_xticks(np.arange(len(x)) * 2 * bar_width, x)
 
-    ax.set_xlabel('Airports')
+    ax.set_axisbelow(True)
+    ax.grid(axis='y')
+
+    ax.set_xlabel('Airport')
     ax.set_ylabel(flights_axis_label)
 
     return fig
