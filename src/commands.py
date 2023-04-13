@@ -1,8 +1,13 @@
+import random
+
 from FlightRadar24.api import FlightRadar24API
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, ForceReply
 from telegram.ext import ContextTypes
-import random
-from common import text_from_airport
+
+from common import text_from_airport, plot_to_bytes
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 fr_api = FlightRadar24API()
 
@@ -39,6 +44,7 @@ def airports_list_formatter(page_number, country):
     reply_markup = add_arrows(keyboard, page_number, len(local_airports) // items_per_page)
     return reply_markup
 
+
 def zones_list_formatter(page_number):
     keyboard = []
     zones = fr_api.get_zones()
@@ -74,9 +80,10 @@ def flights_list_formatter(page_number, zone):
     reply_markup = add_arrows(keyboard, page_number, len(flights) // items_per_page)
     return reply_markup
 
+
 def add_arrows(keyboard, page_number, max_page):
-    right_button = InlineKeyboardButton(">", callback_data=page_number+1)
-    left_button = InlineKeyboardButton("<", callback_data=page_number-1)
+    right_button = InlineKeyboardButton(">", callback_data=page_number + 1)
+    left_button = InlineKeyboardButton("<", callback_data=page_number - 1)
 
     if 1 < page_number < max_page:
         keyboard.append([left_button, right_button])
@@ -343,3 +350,42 @@ async def flight_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
         await query.edit_message_text(text=reply)
         return -1
+
+
+async def top_destinations_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    flights = fr_api.get_flights()
+    destinations = {}
+
+    for flight in flights:
+        try:
+            destination_iata = flight.destination_airport_iata
+
+            if destination_iata == 'N/A':
+                continue
+
+            if destination_iata in destinations:
+                destinations[destination_iata] += 1
+            else:
+                destinations[destination_iata] = 0
+        except:
+            ##bad data
+            pass
+
+    destinations = sorted(destinations.items(), key=lambda item: item[1], reverse=True)[:10]
+
+    fig, ax = plt.subplots()
+
+    width = 0.75
+
+    x = list(map(lambda t: t[0], destinations))
+    y = list(map(lambda t: t[1], destinations))
+
+    for i in range(len(x)):
+        ax.bar(i * 2 * width, y[i], width)
+
+    ax.set_xticks(np.arange(len(x)) * 2 * width, x)
+
+    ax.set_xlabel('Airports')
+    ax.set_ylabel('Incoming flights')
+
+    await update.message.reply_photo(plot_to_bytes(fig))

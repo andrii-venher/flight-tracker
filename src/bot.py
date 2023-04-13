@@ -9,7 +9,8 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
     ConversationHandler
 
 from commands import start, help_command, random_airport, countries_list, airports_list, airport_info, echo, \
-    random_flight, random_airline, top_destinations, zones_list, flights_list, flight_info, top_origins
+    random_flight, random_airline, top_destinations, zones_list, flights_list, flight_info, top_origins, \
+    top_destinations_chart
 
 AIRPORTS, AIRPORT_INFO, FLIGHTS, FLIGHT_INFO = range(4)
 
@@ -27,13 +28,14 @@ def build_bot():
             CommandHandler("random_airline", random_airline),
             CommandHandler("top_destinations", top_destinations),
             CommandHandler("top_origins", top_origins),
-            CommandHandler("track_flights", zones_list)
+            CommandHandler("track_flights", zones_list),
+            CommandHandler("top_destinations_chart", top_destinations_chart),
         ],
         states={
             AIRPORTS: [CallbackQueryHandler(airports_list)],
             AIRPORT_INFO: [CallbackQueryHandler(airport_info)],
             FLIGHTS: [CallbackQueryHandler(flights_list)],
-            FLIGHT_INFO: [CallbackQueryHandler(flight_info)]
+            FLIGHT_INFO: [CallbackQueryHandler(flight_info)],
         },
         fallbacks=[CommandHandler("start", start)],
     )
