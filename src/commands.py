@@ -5,6 +5,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, ForceRe
 from telegram.ext import ContextTypes
 
 from common import text_from_airport, plot_to_bytes
+from services import flight_service, plot_service
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -218,75 +219,19 @@ async def random_airline(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def top_destinations(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    flights = fr_api.get_flights()
-    destinations = {}
-
-    for flight in flights:
-        try:
-            destination_iata = flight.destination_airport_iata
-
-            if destination_iata == 'N/A':
-                continue
-
-            if destination_iata in destinations:
-                destinations[destination_iata] += 1
-            else:
-                destinations[destination_iata] = 0
-        except:
-            ##bad data
-            pass
-
-    destinations = dict(sorted(destinations.items(), key=lambda item: item[1], reverse=True))
-    top_airports = list(destinations.items())[:10]
+    airports_ranking = flight_service.get_top_destinations()[:10]
 
     text = 'Top 10 destinations at the moment:\n'
-    i = 1
-    for airport_tuple in top_airports:
-        text += f'{i}. '
-        airport = fr_api.get_airport(airport_tuple[0])
-        text += airport["name"]
-        text += f' ({airport["position"]["country"]["name"]})'
-        text += ": "
-        text += f'{airport_tuple[1]}'
-        text += "\n"
-        i += 1
+    text += flight_service.format_airports_ranking(airports_ranking)
 
     await update.message.reply_text(text)
 
 
 async def top_origins(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    flights = fr_api.get_flights()
-    origins = {}
-
-    for flight in flights:
-        try:
-            origin_iata = flight.origin_airport_iata
-
-            if origin_iata == 'N/A':
-                continue
-
-            if origin_iata in origins:
-                origins[origin_iata] += 1
-            else:
-                origins[origin_iata] = 0
-        except:
-            ##bad data
-            pass
-
-    destinations = dict(sorted(origins.items(), key=lambda item: item[1], reverse=True))
-    top_airports = list(destinations.items())[:10]
+    airports_ranking = flight_service.get_top_origins()[:10]
 
     text = 'Top 10 origins at the moment:\n'
-    i = 1
-    for airport_tuple in top_airports:
-        text += f'{i}. '
-        airport = fr_api.get_airport(airport_tuple[0])
-        text += airport["name"]
-        text += f' ({airport["position"]["country"]["name"]})'
-        text += ": "
-        text += f'{airport_tuple[1]}'
-        text += "\n"
-        i += 1
+    text += flight_service.format_airports_ranking(airports_ranking)
 
     await update.message.reply_text(text)
 
@@ -353,39 +298,16 @@ async def flight_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
 
 async def top_destinations_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    flights = fr_api.get_flights()
-    destinations = {}
+    airports_ranking = flight_service.get_top_destinations()[:10]
 
-    for flight in flights:
-        try:
-            destination_iata = flight.destination_airport_iata
+    fig = plot_service.make_airports_ranking_chart(airports_ranking, 'Incoming flights')
 
-            if destination_iata == 'N/A':
-                continue
+    await update.message.reply_photo(plot_to_bytes(fig), flight_service.format_airports_ranking(airports_ranking))
 
-            if destination_iata in destinations:
-                destinations[destination_iata] += 1
-            else:
-                destinations[destination_iata] = 0
-        except:
-            ##bad data
-            pass
 
-    destinations = sorted(destinations.items(), key=lambda item: item[1], reverse=True)[:10]
+async def top_origins_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    airports_ranking = flight_service.get_top_origins()[:10]
 
-    fig, ax = plt.subplots()
+    fig = plot_service.make_airports_ranking_chart(airports_ranking, 'Outgoing flights')
 
-    width = 0.75
-
-    x = list(map(lambda t: t[0], destinations))
-    y = list(map(lambda t: t[1], destinations))
-
-    for i in range(len(x)):
-        ax.bar(i * 2 * width, y[i], width)
-
-    ax.set_xticks(np.arange(len(x)) * 2 * width, x)
-
-    ax.set_xlabel('Airports')
-    ax.set_ylabel('Incoming flights')
-
-    await update.message.reply_photo(plot_to_bytes(fig))
+    await update.message.reply_photo(plot_to_bytes(fig), flight_service.format_airports_ranking(airports_ranking))
