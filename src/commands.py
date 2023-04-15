@@ -1,10 +1,9 @@
 import random
-
 from FlightRadar24.api import FlightRadar24API
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from common import text_from_airport, plot_to_bytes
+from common import text_from_airport, plot_to_bytes, map_plot_to_bytes
 from services import flight_service, plot_service, markup_service
 from services.markup_service import AIRPORTS, AIRPORT_INFO, FLIGHTS, FLIGHT_INFO
 
@@ -206,8 +205,18 @@ async def get_aircraft_image(update: Update, context: ContextTypes.DEFAULT_TYPE)
         flight_id = update.message.text.split(' ')[1]
         details = fr_api.get_flight_details(flight_id)
 
-        await update.message.reply_photo(details['aircraft']['images']['large'][0]['src'], details['aircraft']['model']['text'])
+        await update.message.reply_photo(details['aircraft']['images']['large'][0]['src'],
+                                         details['aircraft']['model']['text'])
     except:
         await update.message.reply_text("Data not found")
 
 
+async def get_flight_map(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        flight_id = update.message.text.split(' ')[1]
+        details = fr_api.get_flight_details(flight_id)
+        plot = plot_service.make_flight_map(details)
+        await update.message.reply_photo(map_plot_to_bytes(plot),
+                                         f"From {details['airport']['origin']['name']} to {details['airport']['destination']['name']}")
+    except:
+        await update.message.reply_text("Data not found")

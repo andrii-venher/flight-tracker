@@ -10,7 +10,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 
 from commands import random_airport, search_airport, airports_list, airport_info, unknown_command_echo, \
     random_flight, random_airline, top_destinations, search_flight, flights_list, flight_info, top_origins, \
-    top_destinations_chart, top_origins_chart, get_aircraft_image
+    top_destinations_chart, top_origins_chart, get_aircraft_image, get_flight_map
 
 from services.markup_service import AIRPORTS, AIRPORT_INFO, FLIGHTS, FLIGHT_INFO
 
@@ -28,7 +28,8 @@ def build_bot():
             CommandHandler("top_origins_chart", top_origins_chart),
             CommandHandler("top_destinations", top_destinations),
             CommandHandler("top_origins", top_origins),
-            CommandHandler("aircraft_image", get_aircraft_image)
+            CommandHandler("aircraft_image", get_aircraft_image),
+            CommandHandler("flight_map", get_flight_map)
         ],
         states={
             AIRPORTS: [CallbackQueryHandler(airports_list)],

@@ -23,3 +23,11 @@ def plot_to_bytes(fig) -> bytes:
 
     plot_bytes = memory_stream.getvalue()
     return plot_bytes
+
+
+def map_plot_to_bytes(plot) -> bytes:
+    memory_stream = io.BytesIO()
+    plot.savefig(memory_stream, format='png')
+    plot_bytes = memory_stream.getvalue()
+    return plot_bytes
+
