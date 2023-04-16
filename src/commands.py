@@ -124,25 +124,7 @@ async def top_origins(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def top_airlines(update: Update, context: ContextTypes.DEFAULT_TYPE):
     flights=fr_api.get_flights()
-    local_flights = []
-    airlines={}
-    for flight in flights:
-        try:
-            if flight.on_ground:
-                continue
-            airline=flight.airline_iata
-            if airline == 'N/A':
-                continue
-            if airline in airlines:
-                airlines[airline] += 1
-            else:
-                airlines[airline] = 1
-        except:
-            ##bad data
-            pass
-
-    airlines = dict(sorted(airlines.items(), key=lambda x: x[1], reverse=True))
-    top_airlines = list(airlines.items())[:10]
+    top_airlines=flight_service.top_air(flights)
     text = 'Top 10 airlines by the number of flights at the moment:\n'
     i = 1
 
