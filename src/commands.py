@@ -127,15 +127,7 @@ async def top_airlines(update: Update, context: ContextTypes.DEFAULT_TYPE):
     top_airlines=flight_service.top_air(flights)
     text = 'Top 10 airlines by the number of flights at the moment:\n'
     i = 1
-
-    for air in top_airlines:
-        text += f'{i}. '
-        air_line =fr_api.get_airlines()
-        text += air_line[i]["Name"]
-        text += ": "
-        text += f'{air[1]}'
-        text += "\n"
-        i += 1
+    text+=flight_service.format_airlines_ranking(top_airlines)
 
     await update.message.reply_text(text)
 
