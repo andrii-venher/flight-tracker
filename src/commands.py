@@ -228,11 +228,16 @@ async def top_destinations_chart(update: Update, context: ContextTypes.DEFAULT_T
 
 async def top_origins_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     airports_ranking = flight_service.get_top_origins()[:10]
-
     fig = plot_service.make_airports_ranking_chart(airports_ranking, 'Outgoing flights')
 
     await update.message.reply_photo(plot_to_bytes(fig), flight_service.format_airports_ranking(airports_ranking))
 
+
+async def top_airlines_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    flights = fr_api.get_flights()
+    airlines_ranking=flight_service.top_air(flights)
+    fig=plot_service.make_airline_ranking_chart(airlines_ranking,"Total flights")
+    await update.message.reply_photo(plot_to_bytes(fig), flight_service.format_airlines_ranking(airlines_ranking))
 
 async def get_aircraft_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
