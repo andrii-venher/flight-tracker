@@ -31,7 +31,7 @@ def build_bot():
             CommandHandler("aircraft_image", get_aircraft_image),
             CommandHandler("flight_map", get_flight_map),
             CommandHandler("top_airlines", top_airlines),
-            CommandHandler("top_airlines_chart",top_airlines_chart)
+            CommandHandler("top_airlines_chart", top_airlines_chart),
         ],
         states={
             AIRPORTS: [CallbackQueryHandler(airports_list)],
