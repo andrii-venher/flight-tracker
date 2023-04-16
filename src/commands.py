@@ -122,6 +122,40 @@ async def top_origins(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(text)
 
+async def top_airlines(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    flights=fr_api.get_flights()
+    local_flights = []
+    airlines={}
+    for flight in flights:
+        try:
+            if flight.on_ground:
+                continue
+            airline=flight.airline_iata
+            if airline == 'N/A':
+                continue
+            if airline in airlines:
+                airlines[airline] += 1
+            else:
+                airlines[airline] = 1
+        except:
+            ##bad data
+            pass
+
+    airlines = dict(sorted(airlines.items(), key=lambda x: x[1], reverse=True))
+    top_airlines = list(airlines.items())[:10]
+    text = 'Top 10 airlines by the number of flights at the moment:\n'
+    i = 1
+
+    for air in top_airlines:
+        text += f'{i}. '
+        air_line =fr_api.get_airlines()
+        text += air_line[i]["Name"]
+        text += ": "
+        text += f'{air[1]}'
+        text += "\n"
+        i += 1
+
+    await update.message.reply_text(text)
 
 async def search_flight(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Echo the user message."""
