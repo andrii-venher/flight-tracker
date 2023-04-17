@@ -84,13 +84,7 @@ async def airport_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 async def random_flight(update: Update, context: ContextTypes.DEFAULT_TYPE):
     flights = fr_api.get_flights()
     flight = random.choice(flights)
-    text = ''
-    text += f'Flight number: {flight.registration}\n'
-    text += f'From: {flight.origin_airport_iata}\n'
-    text += f'To: {flight.destination_airport_iata}\n'
-    text += f'Latitude: {flight.latitude}\n'
-    text += f'Longitude: {flight.longitude}\n'
-    text += f'Ground speed: {flight.ground_speed}'
+    text = flight_service.flight_formatter(flight)
     await update.message.reply_text(text)
 
 
@@ -104,7 +98,6 @@ async def random_airline(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def top_destinations(update: Update, context: ContextTypes.DEFAULT_TYPE):
     airports_ranking = flight_service.get_top_destinations()[:10]
-
     text = 'Top 10 destinations at the moment:\n'
     text += flight_service.format_airports_ranking(airports_ranking)
 
@@ -113,7 +106,6 @@ async def top_destinations(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def top_origins(update: Update, context: ContextTypes.DEFAULT_TYPE):
     airports_ranking = flight_service.get_top_origins()[:10]
-
     text = 'Top 10 origins at the moment:\n'
     text += flight_service.format_airports_ranking(airports_ranking)
 

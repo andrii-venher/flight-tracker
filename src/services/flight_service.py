@@ -133,3 +133,14 @@ def airp_by_iata(airport_iata) -> str:
         if airport["iata"] == airport_iata:
             text = common.text_from_airport(airport)
     return text
+
+
+def flight_formatter(flight) -> str:
+    text = ''
+    text += f'Flight number: {flight.registration}\n'
+    text += f'From: {flight.origin_airport_iata}\n'
+    text += f'To: {flight.destination_airport_iata}\n'
+    text += f'Latitude: {flight.latitude}\n'
+    text += f'Longitude: {flight.longitude}\n'
+    text += f'Ground speed: {flight.ground_speed}'
+    return text
