@@ -85,6 +85,7 @@ async def random_flight(update: Update, context: ContextTypes.DEFAULT_TYPE):
     flights = fr_api.get_flights()
     flight = random.choice(flights)
     text = ''
+    text += f'ID: {flight.id}\n'
     text += f'Flight number: {flight.registration}\n'
     text += f'From: {flight.origin_airport_iata}\n'
     text += f'To: {flight.destination_airport_iata}\n'
@@ -122,13 +123,15 @@ async def top_origins(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(text)
 
+
 async def top_airlines(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    flights=fr_api.get_flights()
-    top_airlines=flight_service.top_air(flights)
+    flights = fr_api.get_flights()
+    top_airlines = flight_service.top_air(flights)
     text = 'Top 10 airlines by the number of flights at the moment:\n'
-    text+=flight_service.format_airlines_ranking(top_airlines)
+    text += flight_service.format_airlines_ranking(top_airlines)
 
     await update.message.reply_text(text)
+
 
 async def search_flight(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Echo the user message."""
@@ -207,13 +210,18 @@ async def top_origins_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def top_airlines_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     flights = fr_api.get_flights()
-    airlines_ranking=flight_service.top_air(flights)
-    fig=plot_service.make_airline_ranking_chart(airlines_ranking,"Total flights")
+    airlines_ranking = flight_service.top_air(flights)
+    fig = plot_service.make_airline_ranking_chart(airlines_ranking, "Total flights")
     await update.message.reply_photo(plot_to_bytes(fig), flight_service.format_airlines_ranking(airlines_ranking))
+
 
 async def get_aircraft_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        flight_id = update.message.text.split(' ')[1]
+        chunks = update.message.text.split(' ')
+        if len(chunks) < 2:
+            await update.message.reply_text("Please provide flight ID.")
+            return
+        flight_id = chunks[1]
         details = fr_api.get_flight_details(flight_id)
 
         await update.message.reply_photo(details['aircraft']['images']['large'][0]['src'],
@@ -230,7 +238,11 @@ async def flight_by_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Data not found")
 async def get_flight_map(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        flight_id = update.message.text.split(' ')[1]
+        chunks = update.message.text.split(' ')
+        if len(chunks) < 2:
+            await update.message.reply_text("Please provide flight ID.")
+            return
+        flight_id = chunks[1]
         details = fr_api.get_flight_details(flight_id)
         plot = plot_service.make_flight_map(details)
         await update.message.reply_photo(map_plot_to_bytes(plot),
