@@ -84,14 +84,7 @@ async def airport_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 async def random_flight(update: Update, context: ContextTypes.DEFAULT_TYPE):
     flights = fr_api.get_flights()
     flight = random.choice(flights)
-    text = ''
-    text += f'ID: {flight.id}\n'
-    text += f'Flight number: {flight.registration}\n'
-    text += f'From: {flight.origin_airport_iata}\n'
-    text += f'To: {flight.destination_airport_iata}\n'
-    text += f'Latitude: {flight.latitude}\n'
-    text += f'Longitude: {flight.longitude}\n'
-    text += f'Ground speed: {flight.ground_speed}'
+    text = flight_service.format_flight(flight)
     await update.message.reply_text(text)
 
 
@@ -208,6 +201,7 @@ async def top_origins_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_photo(plot_to_bytes(fig), flight_service.format_airports_ranking(airports_ranking))
 
+
 async def top_airlines_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     flights = fr_api.get_flights()
     airlines_ranking = flight_service.top_air(flights)
@@ -229,13 +223,21 @@ async def get_aircraft_image(update: Update, context: ContextTypes.DEFAULT_TYPE)
     except:
         await update.message.reply_text("Data not found")
 
+
 async def flight_by_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        flight_id = update.message.text.split(' ')[1]
-        text=flight_service.fl_id(flight_id)
+        chunks = update.message.text.split(' ')
+        if len(chunks) < 2:
+            await update.message.reply_text("Please provide flight ID.")
+            return
+        flight_id = chunks[1]
+        flight = flight_service.get_flight_by_id(flight_id)
+        text = flight_service.format_flight(flight)
         await update.message.reply_text(text)
     except:
         await update.message.reply_text("Data not found")
+
+
 async def get_flight_map(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         chunks = update.message.text.split(' ')
