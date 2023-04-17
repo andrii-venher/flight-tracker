@@ -31,27 +31,37 @@ def get_top_destinations():
 def get_top_origins():
     return get_top_flights_by_iata(lambda flight: flight.origin_airport_iata)
 
-def top_air(flights) -> list:
-        local_flights = []
-        airlines = {}
-        for flight in flights:
-            try:
-                if flight.on_ground:
-                    continue
-                airline = flight.airline_iata
-                if airline == 'N/A':
-                    continue
-                if airline in airlines:
-                    airlines[airline] += 1
-                else:
-                    airlines[airline] = 1
-            except:
-                ##bad data
-                pass
 
-        airlines = dict(sorted(airlines.items(), key=lambda x: x[1], reverse=True))
-        top_airlines = list(airlines.items())[:10]
-        return top_airlines
+def top_air(flights) -> list:
+    local_flights = []
+    airlines = {}
+    for flight in flights:
+        try:
+            if flight.on_ground:
+                continue
+            airline = flight.airline_iata
+            if airline == 'N/A':
+                continue
+            if airline in airlines:
+                airlines[airline] += 1
+            else:
+                airlines[airline] = 1
+        except:
+            ##bad data
+            pass
+
+    airlines = dict(sorted(airlines.items(), key=lambda x: x[1], reverse=True))
+    top_airlines = list(airlines.items())[:10]
+    return top_airlines
+
+
+def get_flight_by_id(id):
+    flights = fr_api.get_flights()
+    for flight in flights:
+        if flight.id == id:
+            return flight
+    return None
+
 
 def format_airports_ranking(airports_ranking):
     text = ""
@@ -67,9 +77,10 @@ def format_airports_ranking(airports_ranking):
         i += 1
     return text
 
+
 def format_airlines_ranking(top_airlines):
     i = 1
-    text=""
+    text = ""
     for air in top_airlines:
         text += f'{i}. '
         air_line = fr_api.get_airlines()
@@ -78,4 +89,16 @@ def format_airlines_ranking(top_airlines):
         text += f'{air[1]}'
         text += "\n"
         i += 1
+    return text
+
+
+def format_flight(flight) -> str:
+    text = ''
+    text += f'ID: {flight.id}\n'
+    text += f'Flight number: {flight.registration}\n'
+    text += f'From: {flight.origin_airport_iata}\n'
+    text += f'To: {flight.destination_airport_iata}\n'
+    text += f'Latitude: {flight.latitude}\n'
+    text += f'Longitude: {flight.longitude}\n'
+    text += f'Ground speed: {flight.ground_speed}'
     return text
