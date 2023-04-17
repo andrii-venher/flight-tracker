@@ -205,7 +205,6 @@ async def top_origins_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_photo(plot_to_bytes(fig), flight_service.format_airports_ranking(airports_ranking))
 
-
 async def top_airlines_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     flights = fr_api.get_flights()
     airlines_ranking=flight_service.top_air(flights)
@@ -222,7 +221,13 @@ async def get_aircraft_image(update: Update, context: ContextTypes.DEFAULT_TYPE)
     except:
         await update.message.reply_text("Data not found")
 
-
+async def flight_by_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        flight_id = update.message.text.split(' ')[1]
+        text=flight_service.fl_id(flight_id)
+        await update.message.reply_text(text)
+    except:
+        await update.message.reply_text("Data not found")
 async def get_flight_map(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         flight_id = update.message.text.split(' ')[1]
