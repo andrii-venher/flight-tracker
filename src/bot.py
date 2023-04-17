@@ -11,7 +11,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 from commands import random_airport, search_airport, airports_list, airport_info, unknown_command_echo, \
     random_flight, random_airline, top_destinations, search_flight, flights_list, flight_info, top_origins, \
     top_destinations_chart, top_origins_chart, get_aircraft_image, get_flight_map, top_airlines, top_airlines_chart, \
-    flight_by_id
+    flight_by_id, airline_by_icao, airport_by_icao, airport_by_iata
 
 from services.markup_service import AIRPORTS, AIRPORT_INFO, FLIGHTS, FLIGHT_INFO
 
@@ -34,12 +34,15 @@ def build_bot():
             CommandHandler("top_airlines", top_airlines),
             CommandHandler("top_airlines_chart", top_airlines_chart),
             CommandHandler("flight_by_id", flight_by_id),
+            CommandHandler("airline_by_icao", airline_by_icao),
+            CommandHandler("airport_by_icao", airport_by_icao),
+            CommandHandler("airport_by_iata", airport_by_iata)
         ],
         states={
             AIRPORTS: [CallbackQueryHandler(airports_list)],
             AIRPORT_INFO: [CallbackQueryHandler(airport_info)],
             FLIGHTS: [CallbackQueryHandler(flights_list)],
-            FLIGHT_INFO: [CallbackQueryHandler(flight_info)],
+            FLIGHT_INFO: [CallbackQueryHandler(flight_info)]
         },
         fallbacks=[CommandHandler("unknown_command_echo", unknown_command_echo)],
     )
