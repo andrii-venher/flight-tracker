@@ -33,7 +33,7 @@ def build_bot():
             CommandHandler("flight_map", get_flight_map),
             CommandHandler("top_airlines", top_airlines),
             CommandHandler("top_airlines_chart", top_airlines_chart),
-            CommandHandler("flight_by_id", flight_by_id),
+            CommandHandler("flight_by_id", flight_by_id)
         ],
         states={
             AIRPORTS: [CallbackQueryHandler(airports_list)],
