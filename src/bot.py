@@ -42,7 +42,7 @@ def build_bot():
             AIRPORTS: [CallbackQueryHandler(airports_list)],
             AIRPORT_INFO: [CallbackQueryHandler(airport_info)],
             FLIGHTS: [CallbackQueryHandler(flights_list)],
-            FLIGHT_INFO: [CallbackQueryHandler(flight_info)]
+            FLIGHT_INFO: [CallbackQueryHandler(flight_info)],
         },
         fallbacks=[CommandHandler("unknown_command_echo", unknown_command_echo)],
     )

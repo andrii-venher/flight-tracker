@@ -1,6 +1,5 @@
 from FlightRadar24.api import FlightRadar24API
 from src import common
-
 fr_api = FlightRadar24API()
 
 
@@ -56,6 +55,14 @@ def top_air(flights) -> list:
     return top_airlines
 
 
+def get_flight_by_id(id):
+    flights = fr_api.get_flights()
+    for flight in flights:
+        if flight.id == id:
+            return flight
+    return None
+
+
 def format_airports_ranking(airports_ranking):
     text = ""
     i = 1
@@ -84,6 +91,17 @@ def format_airlines_ranking(top_airlines):
         i += 1
     return text
 
+
+def format_flight(flight) -> str:
+    text = ''
+    text += f'ID: {flight.id}\n'
+    text += f'Flight number: {flight.registration}\n'
+    text += f'From: {flight.origin_airport_iata}\n'
+    text += f'To: {flight.destination_airport_iata}\n'
+    text += f'Latitude: {flight.latitude}\n'
+    text += f'Longitude: {flight.longitude}\n'
+    text += f'Ground speed: {flight.ground_speed}'
+    return text
 
 def fl_id(flight_id) -> str:
     flights = fr_api.get_flights()
