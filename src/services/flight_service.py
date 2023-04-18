@@ -103,21 +103,6 @@ def format_flight(flight) -> str:
     text += f'Ground speed: {flight.ground_speed}'
     return text
 
-def fl_id(flight_id) -> str:
-    flights = fr_api.get_flights()
-    text = ""
-    for flight in flights:
-        if flight.registration == flight_id:
-            text += f'Flight number: {flight.registration}\n'
-            text += f'From: {flight.origin_airport_iata}\n'
-            text += f'To: {flight.destination_airport_iata}\n'
-            text += f'Latitude: {flight.latitude}\n'
-            text += f'Longitude: {flight.longitude}\n'
-            text += f'Ground speed: {flight.ground_speed}'
-            break
-    return text
-
-
 def format_icao(airline) -> str:
     text = ''
     text += f'Name: {airline["Name"]}\n'
