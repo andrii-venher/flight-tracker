@@ -251,3 +251,40 @@ async def get_flight_map(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                          f"From {details['airport']['origin']['name']} to {details['airport']['destination']['name']}")
     except:
         await update.message.reply_text("Data not found")
+
+async def airline_by_icao(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        chunks = update.message.text.split(' ')
+        if len(chunks) < 2:
+            await update.message.reply_text("Please provide airline ICAO.")
+            return
+        airline_icao = chunks[1]
+        text = flight_service.air_by_icao(airline_icao)
+        await update.message.reply_text(text)
+    except:
+        await update.message.reply_text("Data not found")
+
+
+async def airport_by_icao(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        chunks = update.message.text.split(' ')
+        if len(chunks) < 2:
+            await update.message.reply_text("Please provide airport ICAO.")
+            return
+        airport_icao = chunks[1]
+        text = flight_service.airp_by_icao(airport_icao)
+        await update.message.reply_text(text)
+    except:
+        await update.message.reply_text("Data not found")
+
+async def airport_by_iata(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        chunks = update.message.text.split(' ')
+        if len(chunks) < 2:
+            await update.message.reply_text("Please provide airport IATA.")
+            return
+        airport_iata = chunks[1]
+        text = flight_service.airp_by_iata(airport_iata)
+        await update.message.reply_text(text)
+    except:
+        await update.message.reply_text("Data not found")

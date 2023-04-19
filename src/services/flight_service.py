@@ -1,5 +1,5 @@
 from FlightRadar24.api import FlightRadar24API
-
+from src import common
 fr_api = FlightRadar24API()
 
 
@@ -101,4 +101,38 @@ def format_flight(flight) -> str:
     text += f'Latitude: {flight.latitude}\n'
     text += f'Longitude: {flight.longitude}\n'
     text += f'Ground speed: {flight.ground_speed}'
+    return text
+
+def format_icao(airline) -> str:
+    text = ''
+    text += f'Name: {airline["Name"]}\n'
+    text += f'Company code: {airline["Code"]}\n'
+    text += f'ICAO: {airline["ICAO"]}'
+    return text
+
+
+def air_by_icao(airline_icao) -> str:
+    airlines = fr_api.get_airlines()
+    text = ''
+    for airline in airlines:
+        if airline["ICAO"] == airline_icao:
+            text = format_icao(airline)
+    return text
+
+
+def airp_by_icao(airport_icao) -> str:
+    text = ""
+    airports = fr_api.get_airports()
+    for airport in airports:
+        if airport["icao"] == airport_icao:
+            text = common.text_from_airport(airport)
+    return text
+
+
+def airp_by_iata(airport_iata) -> str:
+    text = ""
+    airports = fr_api.get_airports()
+    for airport in airports:
+        if airport["iata"] == airport_iata:
+            text = common.text_from_airport(airport)
     return text
