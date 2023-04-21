@@ -292,31 +292,6 @@ async def airport_by_iata(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Data not found")
 
 
-# async def is_delayed(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     try:
-#         chunks = update.message.text.split(' ')
-#         if len(chunks) < 2:
-#             await update.message.reply_text("Please provide flight ID.")
-#             return
-#         flight_id = chunks[1]
-#         details = fr_api.get_flight_details(flight_id)
-#         if details["time"]["scheduled"]["arrival"] is None:
-#             await update.message.reply_text("Data not found")
-#         elif details["time"]["estimated"]["arrival"] is not None:
-#             diff = details["time"]["estimated"]["arrival"] - details["time"]["scheduled"]["arrival"]
-#             if diff > 0:
-#                 minutes, seconds = divmod(diff, 60)
-#                 await update.message.reply_text(f"The flight is delayed by {minutes} minutes and {seconds} seconds")
-#             elif diff < 0:
-#                 diff = -diff
-#                 minutes, seconds = divmod(diff, 60)
-#                 await update.message.reply_text(f"The flight will arrive earlier by {minutes} minutes and {seconds} seconds")
-#         else:
-#                 await update.message.reply_text("The flight arrives on time")
-#     else:
-#         await update.message.reply_text("Data not found")
-# except:
-#         await update.message.reply_text("Data not found")
 
 async def is_delayed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -331,12 +306,26 @@ async def is_delayed(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif details["time"]["estimated"]["arrival"] is not None:
             diff = details["time"]["estimated"]["arrival"] - details["time"]["scheduled"]["arrival"]
             if diff > 0:
-                minutes, seconds = divmod(diff, 60)
-                await update.message.reply_text(f"The flight is delayed by {minutes} minutes and {seconds} seconds")
+                if diff < 60:
+                    await update.message.reply_text(f"The flight is delayed by {diff} seconds")
+                elif diff >= 60 and diff < 3600:
+                    minutes, seconds = divmod(diff, 60)
+                    await update.message.reply_text(f"The flight is delayed by {minutes} minutes and {seconds} seconds")
+                else:
+                    hours, rem = divmod(diff, 3600)
+                    minutes, seconds = divmod(rem, 60)
+                    await update.message.reply_text(f"The flight is delayed by {hours} hours, {minutes} minutes, and {seconds} seconds")
             elif diff < 0:
                 diff = -diff
-                minutes, seconds = divmod(diff, 60)
-                await update.message.reply_text(f"The flight will arrive earlier by {minutes} minutes and {seconds} seconds")
+                if diff < 60:
+                    await update.message.reply_text(f"The flight will arrive earlier by {diff} seconds")
+                elif diff >= 60 and diff < 3600:
+                    minutes, seconds = divmod(diff, 60)
+                    await update.message.reply_text(f"The flight will arrive earlier by {minutes} minutes and {seconds} seconds")
+                else:
+                    hours, rem = divmod(diff, 3600)
+                    minutes, seconds = divmod(rem, 60)
+                    await update.message.reply_text(f"The flight will arrive earlier by {hours} hours, {minutes} minutes, and {seconds} seconds")
             else:
                 await update.message.reply_text("The flight arrives on time")
         else:
