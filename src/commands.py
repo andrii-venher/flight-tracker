@@ -6,7 +6,6 @@ from telegram.ext import ContextTypes
 from common import text_from_airport, plot_to_bytes, map_plot_to_bytes, text_from_seconds
 from services import flight_service, plot_service, markup_service
 from services.markup_service import AIRPORTS, AIRPORT_INFO, FLIGHTS, FLIGHT_INFO
-from src.services.flight_service import is_flight_delayed, format_icao
 
 fr_api = FlightRadar24API()
 
@@ -269,7 +268,7 @@ async def airline_by_icao(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         airline_icao = chunks[1]
         airline = flight_service.air_by_icao(airline_icao)
-        text = format_icao(airline)
+        text = flight_service.format_icao(airline)
         await update.message.reply_text(text)
     except:
         await update.message.reply_text("Data not found")
@@ -310,7 +309,7 @@ async def is_delayed(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Please provide flight ID.")
             return
         flight_id = chunks[1]
-        diff = is_flight_delayed(flight_id)
+        diff = flight_service.is_flight_delayed(flight_id)
         if diff is None:
             await update.message.reply_text("Data not found")
         elif diff == 0:
@@ -336,7 +335,7 @@ async def is_delayed_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
         flight_ids = list(filter(lambda c: len(c) == 8, flight_ids))
         diffs = []
         for flight_id in flight_ids:
-            diff = is_flight_delayed(flight_id)
+            diff = flight_service.is_flight_delayed(flight_id)
             if diff is None:
                 await update.message.reply_text(f"Invalid flight ID: {flight_id}")
                 return
