@@ -1,5 +1,4 @@
 from FlightRadar24.api import FlightRadar24API
-from src import common
 
 fr_api = FlightRadar24API()
 
@@ -48,7 +47,6 @@ def top_air(flights) -> list:
             else:
                 airlines[airline] = 1
         except:
-            ##bad data
             pass
 
     airlines = dict(sorted(airlines.items(), key=lambda x: x[1], reverse=True))
@@ -113,12 +111,12 @@ def format_icao(airline) -> str:
     return text
 
 
-def air_by_icao(airline_icao) -> str:
+def air_by_icao(airline_icao):
     airlines = fr_api.get_airlines()
     text = ''
     for airline in airlines:
         if airline["ICAO"] == airline_icao:
-            text = format_icao(airline)
+            return airline
     return text
 
 
@@ -127,7 +125,7 @@ def airp_by_icao(airport_icao) -> str:
     airports = fr_api.get_airports()
     for airport in airports:
         if airport["icao"] == airport_icao:
-            text = common.text_from_airport(airport)
+            return airport
     return text
 
 
@@ -136,7 +134,7 @@ def airp_by_iata(airport_iata) -> str:
     airports = fr_api.get_airports()
     for airport in airports:
         if airport["iata"] == airport_iata:
-            text = common.text_from_airport(airport)
+            return airport
     return text
 
 

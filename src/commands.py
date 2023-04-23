@@ -6,7 +6,7 @@ from telegram.ext import ContextTypes
 from common import text_from_airport, plot_to_bytes, map_plot_to_bytes, text_from_seconds
 from services import flight_service, plot_service, markup_service
 from services.markup_service import AIRPORTS, AIRPORT_INFO, FLIGHTS, FLIGHT_INFO
-from src.services.flight_service import is_flight_delayed
+from src.services.flight_service import is_flight_delayed, format_icao
 
 fr_api = FlightRadar24API()
 
@@ -268,7 +268,8 @@ async def airline_by_icao(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Please provide airline ICAO.")
             return
         airline_icao = chunks[1]
-        text = flight_service.air_by_icao(airline_icao)
+        airline = flight_service.air_by_icao(airline_icao)
+        text = format_icao(airline)
         await update.message.reply_text(text)
     except:
         await update.message.reply_text("Data not found")
@@ -281,7 +282,8 @@ async def airport_by_icao(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Please provide airport ICAO.")
             return
         airport_icao = chunks[1]
-        text = flight_service.airp_by_icao(airport_icao)
+        airport = flight_service.airp_by_icao(airport_icao)
+        text = text_from_airport(airport)
         await update.message.reply_text(text)
     except:
         await update.message.reply_text("Data not found")
@@ -294,7 +296,8 @@ async def airport_by_iata(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Please provide airport IATA.")
             return
         airport_iata = chunks[1]
-        text = flight_service.airp_by_iata(airport_iata)
+        airport = flight_service.airp_by_iata(airport_iata)
+        text = text_from_airport(airport)
         await update.message.reply_text(text)
     except:
         await update.message.reply_text("Data not found")
