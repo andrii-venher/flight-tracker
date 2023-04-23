@@ -4,10 +4,12 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 fr_api = FlightRadar24API()
 airports = fr_api.get_airports()
 
-countries = ['Italy', 'Spain', 'Denmark', 'Poland', 'Germany',
+countries = ['United States', 'United Kingdom', 'Spain', 'Poland',
              'France', 'Portugal', 'Sweden', 'Finland',
-             'China', 'Austria', 'Japan', 'Norway',
-             'Switzerland', 'Netherlands', 'Brazil', 'Argentina']
+             'China', 'Germany', 'Japan', 'Norway',
+             'Austria', 'Switzerland', 'Netherlands', 'Brazil',
+             'Denmark', 'Turkey', 'Italy', 'Singapore',
+             'South Korea', 'United Arab Emirates', 'Australia', 'Canada']
 items_per_page = 4
 max_number_of_countries_pages = len(countries) // items_per_page
 
