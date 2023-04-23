@@ -343,7 +343,7 @@ async def is_delayed_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(f"Invalid flight ID: {flight_id}")
                 return
             diff_minutes = diff // 60
-            if diff_minutes < 1440:
+            if abs(diff_minutes) < 1440:
                 used_flight_ids.append(flight_id)
                 diffs.append(diff_minutes)
 
