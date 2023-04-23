@@ -155,7 +155,7 @@ async def flights_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         return FLIGHTS
     else:
         context.user_data["zone"] = query.data
-        reply = f"Flights in {query.data}:\n"
+        reply = f"Flights in {query.data.capitalize()}:\n"
 
         reply_markup = markup_service.flights_list_formatter(1, query.data)
         await query.edit_message_text(text=reply, reply_markup=reply_markup)

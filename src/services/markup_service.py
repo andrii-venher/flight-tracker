@@ -40,12 +40,11 @@ def airports_list_formatter(page_number, country):
 def zones_list_formatter(page_number):
     keyboard = []
     zones = fr_api.get_zones()
-    zones_names = []
 
     for zone in list(zones)[(page_number - 1) * items_per_page:page_number * items_per_page]:
         keyboard.append([InlineKeyboardButton(zone.capitalize(), callback_data=zone)])
 
-    reply_markup = add_arrows(keyboard, page_number, len(zones_names) // items_per_page)
+    reply_markup = add_arrows(keyboard, page_number, len(zones) // items_per_page)
     return reply_markup
 
 
