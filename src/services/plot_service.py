@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import geopandas as gpd
 
+plt.set_loglevel('WARNING')
+
 
 def make_airports_ranking_chart(airports_ranking, flights_axis_label):
     fig, ax = plt.subplots()

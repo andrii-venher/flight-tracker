@@ -333,14 +333,21 @@ async def is_delayed_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
         flight_ids = list(dict.fromkeys(chunks[1:]))
         # Filter out invalid IDs
         flight_ids = list(filter(lambda c: len(c) == 8, flight_ids))
+
         diffs = []
+        used_flight_ids = []
+
         for flight_id in flight_ids:
             diff = flight_service.is_flight_delayed(flight_id)
             if diff is None:
                 await update.message.reply_text(f"Invalid flight ID: {flight_id}")
                 return
-            diffs.append(diff // 60)
-        fig = plot_service.make_delayed_chart(flight_ids, diffs)
+            diff_minutes = diff // 60
+            if diff_minutes < 1440:
+                used_flight_ids.append(flight_id)
+                diffs.append(diff_minutes)
+
+        fig = plot_service.make_delayed_chart(used_flight_ids, diffs)
         await update.message.reply_photo(plot_to_bytes(fig))
     except:
         await update.message.reply_text("Data not found")
