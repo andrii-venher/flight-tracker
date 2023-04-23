@@ -334,8 +334,11 @@ async def is_delayed_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Filter out invalid IDs
         flight_ids = list(filter(lambda c: len(c) == 8, flight_ids))
 
-        diffs = []
+        used_diffs = []
         used_flight_ids = []
+
+        outliers_diffs = []
+        outliers_flight_ids = []
 
         for flight_id in flight_ids:
             diff = flight_service.is_flight_delayed(flight_id)
@@ -345,9 +348,23 @@ async def is_delayed_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
             diff_minutes = diff // 60
             if abs(diff_minutes) < 1440:
                 used_flight_ids.append(flight_id)
-                diffs.append(diff_minutes)
+                used_diffs.append(diff_minutes)
+            else:
+                outliers_flight_ids.append(flight_id)
+                outliers_diffs.append(diff_minutes)
 
-        fig = plot_service.make_delayed_chart(used_flight_ids, diffs)
-        await update.message.reply_photo(plot_to_bytes(fig))
+        fig = plot_service.make_delayed_chart(used_flight_ids, used_diffs)
+        text = ""
+        for outlier in zip(outliers_flight_ids, outliers_diffs):
+            flight_id, diff = outlier
+            if diff > 0:
+                text += f"Flight {flight_id} is delayed by {text_from_seconds(diff)}\n"
+            else:
+                text += f"Flight {flight_id} will arrive earlier by {text_from_seconds(-diff)}\n"
+        if len(text) > 0:
+            text = "Outliers that are not present on the chart:\n" + text
+            await update.message.reply_photo(plot_to_bytes(fig), text)
+        else:
+            await update.message.reply_photo(plot_to_bytes(fig))
     except:
         await update.message.reply_text("Data not found")
