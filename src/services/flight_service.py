@@ -1,5 +1,6 @@
 from FlightRadar24.api import FlightRadar24API
 from src import common
+
 fr_api = FlightRadar24API()
 
 
@@ -103,6 +104,7 @@ def format_flight(flight) -> str:
     text += f'Ground speed: {flight.ground_speed}'
     return text
 
+
 def format_icao(airline) -> str:
     text = ''
     text += f'Name: {airline["Name"]}\n'
@@ -136,3 +138,18 @@ def airp_by_iata(airport_iata) -> str:
         if airport["iata"] == airport_iata:
             text = common.text_from_airport(airport)
     return text
+
+
+def is_flight_delayed(flight_id):
+    try:
+        details = fr_api.get_flight_details(flight_id)
+        if details["time"]["scheduled"]["arrival"] is None:
+            return None
+        elif details["time"]["estimated"]["arrival"] is not None:
+            diff = details["time"]["estimated"]["arrival"] - details["time"]["scheduled"]["arrival"]
+            return diff
+        else:
+            # Flight arrives on time
+            return 0
+    except:
+        return None

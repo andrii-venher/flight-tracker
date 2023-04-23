@@ -24,6 +24,7 @@ def make_airports_ranking_chart(airports_ranking, flights_axis_label):
 
     return fig
 
+
 def make_airline_ranking_chart(airline_ranking, flights_axis_label):
     fig, ax = plt.subplots()
 
@@ -70,3 +71,38 @@ def make_flight_map(flight_details):
 
     return plt
 
+
+def make_delayed_chart(flight_ids, diffs):
+    fig, ax = plt.subplots()
+
+    for i in range(len(flight_ids)):
+        if diffs[i] > 0:
+            ax.bar(flight_ids[i], diffs[i], color='red', label='Delayed')
+        elif diffs[i] < 0:
+            ax.bar(flight_ids[i], diffs[i], color='green', label='Earlier')
+        else:
+            ax.bar(flight_ids[i], 1, color='blue', label='On time')
+            ax.bar(flight_ids[i], -1, color='blue', label='On time')
+
+    ax.set_xticklabels(flight_ids, rotation=45)
+
+    ax.set_axisbelow(True)
+    ax.grid(axis='y')
+
+    # Remove duplicates from legend labels
+    handles, labels = ax.get_legend_handles_labels()
+    handle_list, label_list = [], []
+    for handle, label in zip(handles, labels):
+        if label not in label_list:
+            handle_list.append(handle)
+            label_list.append(label)
+
+    # Resize plot to include moved legend and rotated x labels
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0 * 1.8, box.width * 0.8, box.height])
+    ax.legend(handle_list, label_list, loc='center left', bbox_to_anchor=(1, 0.5))
+
+    ax.set_xlabel('Flight ID')
+    ax.set_ylabel("Earlier (minutes) / Delayed (minutes)")
+
+    return fig

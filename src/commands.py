@@ -3,9 +3,10 @@ from FlightRadar24.api import FlightRadar24API
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from common import text_from_airport, plot_to_bytes, map_plot_to_bytes
+from common import text_from_airport, plot_to_bytes, map_plot_to_bytes, text_from_seconds
 from services import flight_service, plot_service, markup_service
 from services.markup_service import AIRPORTS, AIRPORT_INFO, FLIGHTS, FLIGHT_INFO
+from src.services.flight_service import is_flight_delayed
 
 fr_api = FlightRadar24API()
 
@@ -17,14 +18,12 @@ async def unknown_command_echo(update: Update, context: ContextTypes.DEFAULT_TYP
 
 
 async def random_airport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Echo the user message."""
     airport = random.choice(airports)
     text = text_from_airport(airport)
     await update.message.reply_text(text)
 
 
 async def search_airport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Echo the user message."""
     reply_markup = markup_service.countries_list_formatter(1)
     await update.message.reply_text("Please choose a country: ", reply_markup=reply_markup)
 
@@ -83,9 +82,18 @@ async def airport_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
 async def random_flight(update: Update, context: ContextTypes.DEFAULT_TYPE):
     flights = fr_api.get_flights()
-    flight = random.choice(flights)
-    text = flight_service.format_flight(flight)
-    await update.message.reply_text(text)
+    flights = list(filter(lambda f: f.origin_airport_iata != 'N/A' and f.destination_airport_iata != 'N/A', flights))
+    selected_flights = []
+    chunks = update.message.text.split(' ')
+    if len(chunks) == 1:
+        selected_flights.append(random.choice(flights))
+    elif len(chunks) == 2 and chunks[1].isdigit() and int(chunks[1]) > 0:
+        selected_flights.extend(random.sample(flights, int(chunks[1])))
+    for selected_flight in selected_flights:
+        await update.message.reply_text(flight_service.format_flight(selected_flight))
+    if len(selected_flights) > 1:
+        ids = list(map(lambda f: f.id, selected_flights))
+        await update.message.reply_text(f"IDs: {' '.join(ids)}")
 
 
 async def random_airline(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -292,7 +300,6 @@ async def airport_by_iata(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Data not found")
 
 
-
 async def is_delayed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         chunks = update.message.text.split(' ')
@@ -300,35 +307,38 @@ async def is_delayed(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Please provide flight ID.")
             return
         flight_id = chunks[1]
-        details = fr_api.get_flight_details(flight_id)
-        if details["time"]["scheduled"]["arrival"] is None:
+        diff = is_flight_delayed(flight_id)
+        if diff is None:
             await update.message.reply_text("Data not found")
-        elif details["time"]["estimated"]["arrival"] is not None:
-            diff = details["time"]["estimated"]["arrival"] - details["time"]["scheduled"]["arrival"]
-            if diff > 0:
-                if diff < 60:
-                    await update.message.reply_text(f"The flight is delayed by {diff} seconds")
-                elif diff >= 60 and diff < 3600:
-                    minutes, seconds = divmod(diff, 60)
-                    await update.message.reply_text(f"The flight is delayed by {minutes} minutes and {seconds} seconds")
-                else:
-                    hours, rem = divmod(diff, 3600)
-                    minutes, seconds = divmod(rem, 60)
-                    await update.message.reply_text(f"The flight is delayed by {hours} hours, {minutes} minutes, and {seconds} seconds")
-            elif diff < 0:
-                diff = -diff
-                if diff < 60:
-                    await update.message.reply_text(f"The flight will arrive earlier by {diff} seconds")
-                elif diff >= 60 and diff < 3600:
-                    minutes, seconds = divmod(diff, 60)
-                    await update.message.reply_text(f"The flight will arrive earlier by {minutes} minutes and {seconds} seconds")
-                else:
-                    hours, rem = divmod(diff, 3600)
-                    minutes, seconds = divmod(rem, 60)
-                    await update.message.reply_text(f"The flight will arrive earlier by {hours} hours, {minutes} minutes, and {seconds} seconds")
-            else:
-                await update.message.reply_text("The flight arrives on time")
+        elif diff == 0:
+            await update.message.reply_text("The flight arrives on time")
         else:
-            await update.message.reply_text("Data not found")
+            if diff > 0:
+                await update.message.reply_text(f"The flight is delayed by {text_from_seconds(diff)}")
+            elif diff < 0:
+                await update.message.reply_text(f"The flight will arrive earlier by {text_from_seconds(-diff)}")
+    except:
+        await update.message.reply_text("Data not found")
+
+
+async def is_delayed_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        chunks = update.message.text.split(' ')
+        if len(chunks) < 3 or len(chunks) > 21:
+            await update.message.reply_text("Please provide at least 2 and at most 20 flight IDs.")
+            return
+        # Ignore command chunk
+        flight_ids = list(dict.fromkeys(chunks[1:]))
+        # Filter out invalid IDs
+        flight_ids = list(filter(lambda c: len(c) == 8, flight_ids))
+        diffs = []
+        for flight_id in flight_ids:
+            diff = is_flight_delayed(flight_id)
+            if diff is None:
+                await update.message.reply_text(f"Invalid flight ID: {flight_id}")
+                return
+            diffs.append(diff // 60)
+        fig = plot_service.make_delayed_chart(flight_ids, diffs)
+        await update.message.reply_photo(plot_to_bytes(fig))
     except:
         await update.message.reply_text("Data not found")

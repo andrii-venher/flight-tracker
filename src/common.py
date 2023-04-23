@@ -31,3 +31,24 @@ def map_plot_to_bytes(plot) -> bytes:
     plot_bytes = memory_stream.getvalue()
     return plot_bytes
 
+
+def text_from_seconds(time):
+    time = abs(time)
+    if time == 0:
+        return None
+    if time < 60:
+        return f"{time} seconds"
+    if 60 <= time < 3600:
+        minutes, seconds = divmod(time, 60)
+        result = f"{minutes} minutes"
+        if seconds > 0:
+            return result + f" and {seconds} seconds"
+    if time >= 3600:
+        hours, r = divmod(time, 60)
+        minutes, seconds = divmod(r, 60)
+        result = f"{hours} hours"
+        if minutes > 0:
+            result += f", {minutes} minutes"
+        if seconds > 0:
+            result += f" and {seconds} seconds"
+        return result
